@@ -1,0 +1,25 @@
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+
+# 중간 렌더 산출물(sheet.py)
+output/
+outputs/
+
+# TexturePacker gdx-tools(자동 다운로드 jar)
+tools/*.jar
+
+# Flutter/Dart 빌드 산출물
+viewer/build/
+viewer/.dart_tool/
+viewer/.flutter-plugins
+viewer/.flutter-plugins-dependencies
+viewer/ios/Pods/
+viewer/macos/Pods/
+viewer/ios/.symlinks/
+viewer/ios/Flutter/ephemeral/
+viewer/macos/Flutter/ephemeral/
+viewer/ios/Flutter/Flutter.podspec

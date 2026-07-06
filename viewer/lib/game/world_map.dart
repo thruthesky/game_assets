@@ -2,11 +2,15 @@ import 'dart:ui';
 
 import 'package:flame/components.dart';
 
-/// 캐릭터가 걸어다니는 야외 맵 — 잔디 지면, 도로망, 건물, 나무.
+/// 캐릭터가 걸어다니는 야외 맵 — 잔디 지면, 낮은 풀·돌멩이, 도로망, 건물, 나무.
 /// world 에 깔리며(priority 낮음) 카메라를 따라 스크롤된다.
-/// 하늘/태양/구름은 [SkyLayer] 가 화면 상단에 고정으로 그린다.
 class WorldMap extends PositionComponent {
-  WorldMap() : super(priority: -1000);
+  WorldMap() : super(priority: -1000) {
+    _buildGroundDetails();
+  }
+
+  /// 지면 장식(낮은 풀·돌멩이) — [x, y, type(0=풀,1=돌)]. 생성 시 결정론적으로 산포.
+  final List<List<double>> _details = [];
 
   /// 맵 절반 크기(±_half 정사각). 캐릭터 이동 경계로도 쓰인다.
   static const double half = 2600;
@@ -44,9 +48,42 @@ class WorldMap extends PositionComponent {
     (-100, -400), (-950, 1200), (1300, 1400), (-2200, -1200), (2200, 1100),
   ];
 
+  /// 정수 좌표 → 결정론적 의사난수(0..2^31). 풀·돌 배치용.
+  static int _hash(int x, int y) {
+    var h = x * 374761393 + y * 668265263;
+    h = (h ^ (h >> 13)) * 1274126177;
+    return h & 0x7fffffff;
+  }
+
+  bool _onRoad(double x, double y) {
+    for (final rx in _vRoads) {
+      if ((x - rx).abs() < _roadW / 2 + 14) return true;
+    }
+    for (final ry in _hRoads) {
+      if ((y - ry).abs() < _roadW / 2 + 14) return true;
+    }
+    return false;
+  }
+
+  /// 잔디 위에 낮은 풀 다발과 돌멩이를 격자+지터로 흩뿌린다(도로 위는 제외).
+  void _buildGroundDetails() {
+    const step = 155.0;
+    for (var gx = -half; gx < half; gx += step) {
+      for (var gy = -half; gy < half; gy += step) {
+        final h = _hash((gx / step).round(), (gy / step).round());
+        if (h % 5 == 0) continue; // 일부 셀은 비워 자연스럽게
+        final px = gx + (h % 110) - 55;
+        final py = gy + ((h >> 8) % 110) - 55;
+        if (_onRoad(px, py)) continue;
+        _details.add([px, py, (h >> 16) % 4 == 0 ? 1 : 0]); // 25% 돌, 75% 풀
+      }
+    }
+  }
+
   @override
   void render(Canvas canvas) {
     _renderGround(canvas);
+    _renderGroundDetails(canvas);
     _renderRoads(canvas);
     for (final b in _buildings) {
       _renderBuilding(canvas, b.$1, b.$2, b.$3, b.$4, Color(b.$5), Color(b.$6));
@@ -78,6 +115,48 @@ class WorldMap extends PositionComponent {
         }
       }
     }
+  }
+
+  void _renderGroundDetails(Canvas canvas) {
+    for (final d in _details) {
+      if (d[2] == 1) {
+        _renderPebble(canvas, d[0], d[1]);
+      } else {
+        _renderGrassTuft(canvas, d[0], d[1]);
+      }
+    }
+    _p
+      ..style = PaintingStyle.fill
+      ..strokeCap = StrokeCap.butt;
+  }
+
+  /// 낮은 풀 다발 — 짧은 풀잎 몇 가닥.
+  void _renderGrassTuft(Canvas canvas, double x, double y) {
+    _p
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3
+      ..strokeCap = StrokeCap.round
+      ..color = const Color(0xFF5C9440);
+    canvas.drawLine(Offset(x - 7, y + 2), Offset(x - 9, y - 14), _p);
+    canvas.drawLine(Offset(x, y + 2), Offset(x - 1, y - 19), _p);
+    canvas.drawLine(Offset(x + 7, y + 2), Offset(x + 10, y - 13), _p);
+    _p.color = const Color(0xFF6EAD4C);
+    canvas.drawLine(Offset(x + 2, y + 2), Offset(x + 4, y - 16), _p);
+  }
+
+  /// 돌멩이 — 회색 타원 + 그림자·하이라이트.
+  void _renderPebble(Canvas canvas, double x, double y) {
+    _p
+      ..style = PaintingStyle.fill
+      ..color = const Color(0x33000000);
+    canvas.drawOval(
+        Rect.fromCenter(center: Offset(x, y + 4), width: 24, height: 9), _p);
+    _p.color = const Color(0xFF9A968C);
+    canvas.drawOval(
+        Rect.fromCenter(center: Offset(x, y), width: 22, height: 14), _p);
+    _p.color = const Color(0xFFBEB9AC);
+    canvas.drawOval(
+        Rect.fromCenter(center: Offset(x - 2, y - 3), width: 10, height: 6), _p);
   }
 
   void _renderRoads(Canvas canvas) {

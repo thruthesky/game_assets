@@ -7,25 +7,34 @@ import 'actor_animation_set.dart';
 import 'actor_component.dart';
 import 'actor_contract.dart';
 import 'monster_component.dart';
-import 'sky_layer.dart';
 import 'world_map.dart';
 
 /// g.blend 캐릭터 뷰어 + 배틀 시뮬레이션. WASD/클릭 이동, 16방향 facing,
 /// 텍스처 팩 자동 로드, 몬스터 추격·전투. 잔디·도로·건물·나무 맵 + 하늘/태양/구름.
 class ViewerGame extends FlameGame with HasKeyboardHandlerComponents {
-  ViewerGame({this.autoBattle = false});
+  ViewerGame({this.autoBattle = false, this.debugSoloPc = false});
 
   /// true 면 PC 를 AI 로 조종해 키 입력 없이 자동으로 배틀한다(데모·녹화용).
   final bool autoBattle;
 
+  /// true 면 몬스터 없이 PC 만 idle 로 띄운다(렌더 진단용).
+  final bool debugSoloPc;
+
   ActorComponent? _actor;
-  ActorAnimationSet? _animSet;
+  ActorAnimationSet? _animSet; // PC(g)
+  ActorAnimationSet? _monsterAnimSet; // 몬스터(hellion)
   late final TextComponent _hud;
   final _TargetMarker _marker = _TargetMarker();
   final List<MonsterComponent> _monsters = [];
 
   double _pcAtkCd = 0; // 자동 배틀 시 PC 공격 쿨다운
   double _pcReviveTimer = 0; // 자동 배틀 시 PC 사망 후 부활 카운트다운
+
+  /// 사용자가 마우스 클릭/WASD 로 개입하면 이 시간(초) 동안 자동 배틀을 멈추고
+  /// 수동 조작을 우선한다. 0 이 되면 다시 자동 배틀로 복귀한다.
+  double _manualTimer = 0;
+  static const double _manualHoldAfterClick = 6;
+  static const double _manualHoldWhileKeys = 1;
 
   /// PC 공격 판정 사거리와 데미지.
   static const double _pcAttackRange = 155;
@@ -35,18 +44,23 @@ class ViewerGame extends FlameGame with HasKeyboardHandlerComponents {
   /// 몬스터가 전멸하면 이 시간 뒤 다음 웨이브를 스폰.
   double _respawnTimer = 0;
 
-  /// PC(0,0) 기준 몬스터 스폰 오프셋(고정 배치).
+  /// PC(0,0) 기준 몬스터 스폰 오프셋(고정 배치). 3마리 — 배틀이 잘 보이게.
   static const List<(double, double)> _spawnOffsets = [
-    (520, -260), (-480, 200), (300, 520), (-360, -420), (600, 260),
+    (480, -220), (-460, 180), (240, 500),
   ];
 
   @override
-  Color backgroundColor() => const Color(0xFF9FD4F0);
+  Color backgroundColor() => const Color(0xFF2E4020); // 맵 경계 밖 중립 지면색
 
   @override
   Future<void> onLoad() async {
     // 텍스처 팩이 번들돼 있으면 스프라이트, 없으면 null → placeholder.
     _animSet = await ActorAnimationSet.tryLoad();
+    // 몬스터 hellion atlas(idle/walk/attack). 실패하면 몬스터는 placeholder.
+    _monsterAnimSet = await ActorAnimationSet.loadFrom(
+      'assets/mob/hellion/hellion.atlas',
+      'assets/mob/hellion/hellion.png',
+    );
 
     final actor = ActorComponent(animSet: _animSet, maxHp: 200)
       ..position = Vector2.zero();
@@ -60,12 +74,9 @@ class ViewerGame extends FlameGame with HasKeyboardHandlerComponents {
     camera.follow(actor);
     camera.viewfinder.zoom = 2.2; // 128px 캐릭터를 크게.
 
-    _spawnWave(); // 첫 몬스터 웨이브
+    if (!debugSoloPc) _spawnWave(); // 첫 몬스터 웨이브
 
-    // 하늘/태양/구름 — viewport 고정(원경 스카이박스).
-    camera.viewport.add(SkyLayer());
-
-    // ── HUD(카메라 viewport 고정) — 하늘 위 가독성 위해 반투명 배경 박스 ──
+    // ── HUD(카메라 viewport 고정) — 반투명 배경 박스로 가독성 확보 ──
     camera.viewport.add(
       RectangleComponent(
         position: Vector2(6, 6),
@@ -92,6 +103,7 @@ class ViewerGame extends FlameGame with HasKeyboardHandlerComponents {
   void onScreenTap(Vector2 screenPixel) {
     final worldPos = camera.globalToLocal(screenPixel);
     _actor?.moveToward(worldPos);
+    _manualTimer = _manualHoldAfterClick; // 클릭하면 자동 배틀을 잠시 멈춘다
   }
 
   /// PC 에게 가장 가까운 살아있는 몬스터(없으면 null).
@@ -118,8 +130,9 @@ class ViewerGame extends FlameGame with HasKeyboardHandlerComponents {
     for (final off in _spawnOffsets) {
       final m = MonsterComponent(
         prey: pc,
-        animSet: _animSet,
-        tint: const Color(0xFFB25FE0), // 보라색 몬스터
+        animSet: _monsterAnimSet, // hellion 스프라이트(있으면), 없으면 placeholder
+        // hellion 원색 표시 — atlas 있으면 tint 없이, 없으면(placeholder) 붉은 tint.
+        tint: _monsterAnimSet == null ? const Color(0xFFE05A5A) : null,
       )..position = pc.position + Vector2(off.$1, off.$2);
       _monsters.add(m);
       world.add(m);
@@ -140,8 +153,20 @@ class ViewerGame extends FlameGame with HasKeyboardHandlerComponents {
     );
     _marker.target = pc.moveTarget;
 
+    // PC 완만한 체력 재생(초당 9) — 배틀 중에도 안정적으로 생존.
+    if (!pc.isDead && pc.hp < pc.maxHp) {
+      pc.hp = (pc.hp + 9 * dt).clamp(0, pc.maxHp);
+    }
+
+    // 사용자가 WASD 를 누르고 있으면 수동 우선 타이머 갱신.
+    if (pc.hasMoveKeyPressed) {
+      _manualTimer = _manualHoldWhileKeys;
+    }
+    if (_manualTimer > 0) _manualTimer -= dt;
+
     // ── 자동 배틀(데모): PC 를 AI 로 조종 + 사망 시 자동 부활 ──
-    if (autoBattle) {
+    // 단, 사용자가 방금 마우스/WASD 로 개입했으면(=_manualTimer>0) 자동 조종을 멈춘다.
+    if (autoBattle && _manualTimer <= 0) {
       if (pc.isDead) {
         _pcReviveTimer -= dt;
         if (_pcReviveTimer <= 0) {
@@ -192,8 +217,11 @@ class ViewerGame extends FlameGame with HasKeyboardHandlerComponents {
     }
 
     final alive = _monsters.where((m) => !m.isDead).length;
+    final control = !autoBattle
+        ? '수동 조작'
+        : (_manualTimer > 0 ? '수동 조작 (클릭/WASD)' : '자동 배틀 (AI)');
     _hud.text = 'g.blend Actor Viewer — 배틀 시뮬레이션\n'
-        '${pc.modeLabel}\n'
+        '${pc.modeLabel}   [$control]\n'
         'HP ${pc.hp.toInt()}/${pc.maxHp.toInt()}   '
         '${pc.statusLine.replaceFirst('state: ', '')}\n'
         '몬스터: $alive 마리\n'

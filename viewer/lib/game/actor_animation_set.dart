@@ -46,6 +46,16 @@ class ActorAnimationSet {
     return build(atlas);
   }
 
+  /// 임의 경로의 atlas 로드(몬스터 hellion 등). 실패하면 null.
+  static Future<ActorAnimationSet?> loadFrom(
+    String atlasAsset,
+    String imageAsset,
+  ) async {
+    final atlas = await ActorAtlas.load(atlasAsset, imageAsset);
+    if (atlas == null) return null;
+    return build(atlas);
+  }
+
   /// 이미 로드한 [atlas] 로 세트를 구성(몬스터가 PC 이미지를 재사용할 때도 씀).
   static ActorAnimationSet? build(ActorAtlas atlas) {
     final table = List<List<ActorClip?>>.generate(
@@ -75,4 +85,7 @@ class ActorAnimationSet {
   /// state·16방향 클립. 비면 같은 방향 idle 로 fallback.
   ActorClip? get(ActorState state, int dir16) =>
       _table[state.index][dir16] ?? _table[ActorState.idle.index][dir16];
+
+  /// 해당 state·방향에 *실제* 클립이 있는지(idle fallback 이 아닌 원본).
+  bool has(ActorState state, int dir16) => _table[state.index][dir16] != null;
 }

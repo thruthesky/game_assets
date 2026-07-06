@@ -55,6 +55,13 @@ class ActorComponent extends PositionComponent with KeyboardHandler {
   /// 클릭/추적 이동 목표를 즉시 해제(사정거리 진입 시 멈춤).
   void stopMoving() => _clickTarget = null;
 
+  /// WASD 이동키가 하나라도 눌려 있는지(사용자 수동 조작 감지용).
+  bool get hasMoveKeyPressed =>
+      _pressed.contains(LogicalKeyboardKey.keyW) ||
+      _pressed.contains(LogicalKeyboardKey.keyA) ||
+      _pressed.contains(LogicalKeyboardKey.keyS) ||
+      _pressed.contains(LogicalKeyboardKey.keyD);
+
   /// 체력을 채우고 idle 로 되살린다(자동 배틀 데모의 PC 부활).
   void revive() {
     hp = maxHp;
@@ -63,16 +70,18 @@ class ActorComponent extends PositionComponent with KeyboardHandler {
     _clickTarget = null;
   }
 
-  /// 피해를 입는다 — 죽으면 death, 아니면 hit 리액션.
+  /// 피해를 입는다 — 죽으면 death, 아니면(hit 애니가 있을 때만) hit 리액션.
+  /// hit 클립이 없는 atlas(g/hellion)는 리액션으로 멈추지 않고 계속 싸운다.
   void takeDamage(double dmg) {
     if (isDead) return;
     hp -= dmg;
     if (hp <= 0) {
       hp = 0;
       _trigger(ActorState.death);
-    } else {
+    } else if (animSet != null && animSet!.has(ActorState.hit, facing)) {
       _trigger(ActorState.hit);
     }
+    // hit 애니 없으면 리액션 생략 — 배틀 흐름 유지(HP 만 감소).
   }
 
   final Set<LogicalKeyboardKey> _pressed = {};
@@ -139,8 +148,16 @@ class ActorComponent extends PositionComponent with KeyboardHandler {
   void _trigger(ActorState s) {
     if (state == ActorState.death && s != ActorState.death) return;
     state = s;
-    // 스프라이트가 있으면 클립 전체 길이만큼 재생하고, 없으면 fallback 시간.
-    _hold = animSet?.get(s, facing)?.duration ?? (_actionHold[s] ?? 0.4);
+    if (animSet != null && animSet!.has(s, facing)) {
+      // 실제 클립이 있으면 그 길이만큼 재생.
+      _hold = animSet!.get(s, facing)!.duration;
+    } else if (animSet != null) {
+      // 클립 없는 상태(hit/death/run 미포함 atlas)는 짧게만 잡아 배틀 흐름 유지.
+      _hold = s == ActorState.death ? 0.6 : 0.12;
+    } else {
+      // placeholder 모드.
+      _hold = _actionHold[s] ?? 0.4;
+    }
     _clickTarget = null;
   }
 

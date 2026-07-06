@@ -1,6 +1,6 @@
 ---
 active: true
-iteration: 1
+iteration: 13
 session_id: 919c2dfa-6066-4038-b9b1-332d6536cde4
 max_iterations: 0
 completion_promise: null
@@ -11,6 +11,7 @@ started_at: "2026-07-06T09:51:01Z"
 
 Conditions:
 - Let the pc and monster battle -> take a video -> prove or fix it
+- Display monster using the ./mob/hellion.blen with the sheet.py
 
 
 Instructions:

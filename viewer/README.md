@@ -38,13 +38,28 @@ Keyboard** 를 켜세요. 마우스 클릭 이동은 별도 설정 없이 동작
 
 ## 배틀 시뮬레이션
 
-`lib/game/monster_component.dart` — 몬스터는 PC 와 같은 g 스프라이트를 보라색 tint 로 재사용해
-PC 를 추격하다 사거리(120px)에서 공격합니다(전용 몬스터 atlas 없이 배틀 테스트 가능).
+`lib/game/monster_component.dart` — 몬스터는 **hellion**(`mob/hellion.blend` 를 sheet.py 로 구운
+`assets/mob/hellion/hellion.atlas`, idle/walk/attack 16방향)을 스프라이트로 씁니다. PC 를 추격하다
+사거리(120px)에서 공격합니다. hellion atlas 가 없으면 붉은 tint placeholder 로 대체됩니다.
 
-- **Space** 로 공격하면 사거리(155px) 안 몬스터 체력이 깎이고, 0 이 되면 death 애니메이션 후 사라집니다.
-- 몬스터가 근접하면 PC 를 때려 PC 체력(머리 위 초록 바)이 줄어듭니다. **X** 로 죽고 **R** 로 부활합니다.
-- 한 웨이브(5마리)를 전멸시키면 3초 뒤 다음 웨이브가 스폰됩니다.
-- HUD 에 PC HP 와 남은 몬스터 수가 표시됩니다.
+- `main.dart` 의 `ViewerGame(autoBattle: true)` 면 PC 가 AI 로 가장 가까운 몬스터를 자동 추격·공격합니다
+  (키 입력 없이 배틀 데모/녹화). `autoBattle: false` 로 두면 순수 수동 조작만 됩니다.
+- **Space** 공격 시 사거리(155px) 안 몬스터 체력이 깎이고 0 이 되면 사라집니다(HUD 몬스터 수 감소).
+- 몬스터가 근접하면 PC 를 때려 PC 체력(머리 위 초록 바)이 줄고, **X** 로 죽고 **R** 로 부활합니다.
+- 한 웨이브(3마리)를 전멸시키면 3초 뒤 다음 웨이브가 스폰됩니다.
+- 이 atlas 들에는 hit/death/run 이 없어(idle/walk/attack 만) 해당 상태는 idle 로 fallback 하며,
+  hit 리액션으로 멈추지 않아 배틀 흐름이 유지됩니다.
+
+## hellion 몬스터 굽기
+
+```bash
+cd /Users/thruthesky/apps/game/laryen   # sheet.py 의존 스크립트(_sheet_render.py 등)가 있는 곳
+./scripts/sheet.py --kind mob --name hellion \
+  --character /Users/thruthesky/Downloads/g/mob/hellion.blend \
+  --animations default --actions idle,walk,attack \
+  --idle 8 --walk 12 --attack 16 --texture-pack true
+# 산출물 laryen/assets/mob/hellion/hellion.{png,atlas} 을 viewer/assets/mob/hellion/ 로 복사 후 재빌드
+```
 
 ## 스프라이트 로딩 (수동 atlas 파서)
 

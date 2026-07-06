@@ -66,6 +66,7 @@ flutter:
   # 지금은 안내 파일(README.txt)만 있어 pub get 이 통과하고, 앱은 placeholder 로 뜬다.
   assets:
     - assets/pc/g/
+    - assets/mob/hellion/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

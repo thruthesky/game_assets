@@ -13,7 +13,7 @@ class MonsterComponent extends ActorComponent {
     required this.prey,
     super.animSet,
     super.tint,
-    super.maxHp = 60,
+    super.maxHp = 35,
   });
 
   /// 추격 대상(PC).
@@ -23,8 +23,8 @@ class MonsterComponent extends ActorComponent {
   static const double _reach = 120;
 
   /// 공격 쿨다운(초)과 한 대 데미지.
-  static const double _attackCd = 1.3;
-  static const double _damage = 7;
+  static const double _attackCd = 2.0;
+  static const double _damage = 3;
 
   double _cd = 0;
 
