@@ -1,0 +1,3 @@
+[submodule ".claude/skills/texture-packer"]
+	path = .claude/skills/texture-packer
+	url = https://github.com/thruthesky/texture-packer
