@@ -1,3 +1,6 @@
 [submodule ".claude/skills/texture-packer"]
 	path = .claude/skills/texture-packer
 	url = https://github.com/thruthesky/texture-packer
+[submodule ".claude/skills/blend-weapon-attach"]
+	path = .claude/skills/blend-weapon-attach
+	url = https://github.com/thruthesky/blend-weapon-attach
