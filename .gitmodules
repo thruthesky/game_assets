@@ -4,3 +4,6 @@
 [submodule ".claude/skills/blend-weapon-attach"]
 	path = .claude/skills/blend-weapon-attach
 	url = https://github.com/thruthesky/blend-weapon-attach
+[submodule "tilepacker"]
+	path = tilepacker
+	url = https://github.com/thruthesky/tilepacker

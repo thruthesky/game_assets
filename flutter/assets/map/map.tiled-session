@@ -1,0 +1,74 @@
+{
+    "activeFile": "main_map.tmx",
+    "expandedProjectPaths": [
+        "."
+    ],
+    "file.lastUsedOpenFilter": "All Files (*)",
+    "fileStates": {
+        "main_map.tmx": {
+            "expandedGroupLayers": [
+                3,
+                4
+            ],
+            "expandedObjectLayers": [
+                5,
+                6
+            ],
+            "scale": 0.75,
+            "selectedLayer": 5,
+            "viewCenter": {
+                "x": 3340,
+                "y": 1594
+            }
+        },
+        "nature.tsx": {
+            "dynamicWrapping": true,
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "tileset.tmx": {
+            "scale": 2.9984374999999996,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 256.13340281396563,
+                "y": 127.89994788952579
+            }
+        },
+        "tileset.tsx": {
+            "dynamicWrapping": false,
+            "scaleInDock": 1
+        },
+        "town.tmx": {
+            "scale": 1.411029411764706,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 544.2834809796769,
+                "y": 271.78738926524227
+            }
+        },
+        "town.tsx": {
+            "scaleInDock": 1
+        }
+    },
+    "last.imagePath": "/Users/thruthesky/apps/game_assets/flutter/assets/map/nature",
+    "map.height": 100,
+    "map.lastUsedFormat": "tmx",
+    "map.orientation": "2",
+    "map.tileWidth": 64,
+    "map.width": 100,
+    "openFiles": [
+        "main_map.tmx",
+        "nature.tsx",
+        "tileset.tmx",
+        "town.tmx"
+    ],
+    "project": "map.tiled-project",
+    "recentFiles": [
+        "town.tmx",
+        "tileset.tmx",
+        "nature.tsx",
+        "main_map.tmx"
+    ],
+    "tileset.lastUsedFormat": "tsx",
+    "tileset.type": 1
+}

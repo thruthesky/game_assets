@@ -27,7 +27,7 @@ class ActorClip {
   }
 }
 
-/// g.atlas → `_table[state][dir16]` 클립 세트. page 이미지 한 장을 공유한다.
+/// girl.atlas → `_table[state][dir16]` 클립 세트. page 이미지 한 장을 공유한다.
 ///
 /// flame_texturepacker 대신 [ActorAtlas] 수동 파서를 쓴다(로드 실패 없이 결정론적).
 class ActorAnimationSet {
@@ -39,7 +39,7 @@ class ActorAnimationSet {
   /// [state.index][dir16] → 클립(없으면 null → idle fallback).
   final List<List<ActorClip?>> _table;
 
-  /// g.atlas + g.png 로드·파싱. 없거나 계약 불일치면 null(→ placeholder).
+  /// girl.atlas + girl.png 로드·파싱. 없거나 계약 불일치면 null(→ placeholder).
   static Future<ActorAnimationSet?> tryLoad() async {
     final atlas = await ActorAtlas.load(kAtlasAssetPath, kImageAssetPath);
     if (atlas == null) return null;

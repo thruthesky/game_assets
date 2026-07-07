@@ -38,6 +38,7 @@ dependencies:
   # 라리엔 게임과 동일 버전 — sheet.py 가 굽는 TexturePacker atlas 를 그대로 로드.
   flame: ^1.37.0
   flame_texturepacker: ^5.1.1
+  flame_tiled: ^3.1.1
 
 dev_dependencies:
   flutter_test:
@@ -61,13 +62,15 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
-  # 텍스처 팩 자리 — 팀원이 sheet.py 로 구운 assets/pc/g/g.{png,atlas} 를 여기에 둔다.
-  # 폴더 통째 등록이라 g.atlas·g.png(멀티페이지 g2.png…)가 추가되면 재빌드만 하면 번들된다.
+  # 텍스처 팩 자리 — 팀원이 sheet.py 로 구운 assets/pc/girl/girl.{png,atlas} 를 여기에 둔다.
+  # 폴더 통째 등록이라 girl.atlas·girl.png(멀티페이지 girl2.png…)가 추가되면 재빌드만 하면 번들된다.
   # 지금은 안내 파일(README.txt)만 있어 pub get 이 통과하고, 앱은 placeholder 로 뜬다.
   assets:
-    - assets/pc/g/
+    - assets/pc/girl/
     - assets/mob/hellion/
     - assets/mob/dreyer/
+    - assets/map/
+    - assets/map/nature/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

@@ -1,6 +1,6 @@
-# g.blend Actor Viewer (Flutter + Flame)
+# girl.blend Actor Viewer (Flutter + Flame)
 
-`g.blend` 캐릭터를 iOS 시뮬레이터에서 표시하고 **마우스 클릭 / WASD 로 이동**시키는 데모
+`girl.blend` 캐릭터를 iOS 시뮬레이터에서 표시하고 **마우스 클릭 / WASD 로 이동**시키는 데모
 앱입니다. 잔디·도로·건물·나무가 있는 야외 맵 위를 걸어다니며, 하늘·태양·흐르는 구름이 상단에
 원경으로 뜹니다. 캐릭터 스프라이트는 라리엔 게임과 **동일한 TexturePacker 텍스처 팩**
 (`sheet.py` 산출물)으로 로드합니다. 텍스처 팩이 없으면 방향이 보이는 **placeholder** 로
@@ -70,26 +70,26 @@ cd /Users/thruthesky/apps/game/laryen   # sheet.py 의존 스크립트(_sheet_re
 
 ## 텍스처 팩 투입 (팀원이 굽는 중)
 
-`g.blend` 로부터 라리엔 `scripts/sheet.py` 로 atlas 를 굽습니다:
+`girl.blend` 로부터 라리엔 `scripts/sheet.py` 로 atlas 를 굽습니다:
 
 ```bash
-laryen/scripts/sheet.py --kind pc --name g \
-  --character /Users/thruthesky/Downloads/g/g.blend --animations default \
+laryen/scripts/sheet.py --kind pc --name girl \
+  --character /Users/thruthesky/Downloads/girl/girl.blend --animations default \
   --idle 8 --walk 12 --run 12 --attack 16 --hit 8 --death 8
 ```
 
-산출물 `g.png`(+ 멀티페이지 `g2.png`…) 과 `g.atlas` 를 다음 경로에 복사하고 재빌드합니다:
+산출물 `girl.png`(+ 멀티페이지 `girl2.png`…) 과 `girl.atlas` 를 다음 경로에 복사하고 재빌드합니다:
 
 ```
-viewer/assets/pc/g/g.png
-viewer/assets/pc/g/g.atlas
+viewer/assets/pc/girl/girl.png
+viewer/assets/pc/girl/girl.atlas
 ```
 
 ```bash
 flutter run -d <시뮬레이터>   # hot reload 가 아니라 재빌드해야 asset 이 번들됨
 ```
 
-이름을 `g` 가 아닌 다른 값으로 구웠다면 `lib/game/actor_contract.dart` 의
+이름을 `girl` 이 아닌 다른 값으로 구웠다면 `lib/game/actor_contract.dart` 의
 `kActorKind` / `kActorCategory` 만 바꾸면 됩니다.
 
 ## 텍스처 팩 계약 (라리엔 SSOT 그대로)

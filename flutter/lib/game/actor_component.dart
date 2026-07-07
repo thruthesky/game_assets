@@ -114,7 +114,7 @@ class ActorComponent extends PositionComponent with KeyboardHandler {
 
   /// HUD 표시용 현재 모드 문자열.
   String get modeLabel =>
-      _hasSprites ? 'SPRITE (g.atlas)' : 'PLACEHOLDER (atlas 대기)';
+      _hasSprites ? 'SPRITE (girl.atlas)' : 'PLACEHOLDER (atlas 대기)';
 
   /// HUD 표시용 상태 라인.
   String get statusLine =>

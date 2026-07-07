@@ -19,7 +19,7 @@ class ViewerApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'g.blend Actor Viewer',
+      title: 'girl.blend Actor Viewer',
       home: Scaffold(
         // 마우스 클릭(시뮬레이터) = 탭 → 그 지점으로 캐릭터 이동.
         body: GestureDetector(

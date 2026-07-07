@@ -5,7 +5,7 @@ import 'package:flame/components.dart';
 /// 라리엔 게임 스프라이트 아틀라스 "계약"을 이 뷰어에 이식한 것.
 ///
 /// 이 값들은 sheet.py(scripts/_sheet_render.py) 가 굽는 atlas 의 region 이름·
-/// 프레임 순서와 1:1 로 맞물린다. 팀원이 만든 g.atlas 가 이 규칙대로 나오므로,
+/// 프레임 순서와 1:1 로 맞물린다. 팀원이 만든 girl.atlas 가 이 규칙대로 나오므로,
 /// 여기서 규칙을 바꾸면 스프라이트가 어긋난다. SSOT 는 라리엔 리포의
 /// lib/features/game/render/direction8.dart · actor_animation_set.dart.
 
@@ -46,9 +46,9 @@ const List<(ActorState, String, double, bool)> kAtlasActions = [
   (ActorState.death, 'death', 0.10, false),
 ];
 
-/// 텍스처 팩 식별자 — 팀원이 `sheet.py --kind pc --name g` 로 구우면
-/// assets/pc/g/g.{png,atlas} 가 된다. 다른 이름으로 구웠다면 여기만 바꾸면 된다.
-const String kActorKind = 'g';
+/// 텍스처 팩 식별자 — 팀원이 `sheet.py --kind pc --name girl` 로 구우면
+/// assets/pc/girl/girl.{png,atlas} 가 된다. 다른 이름으로 구웠다면 여기만 바꾸면 된다.
+const String kActorKind = 'girl';
 const String kActorCategory = 'pc';
 
 /// rootBundle 로 직접 읽을 asset 경로(수동 atlas 파서용).

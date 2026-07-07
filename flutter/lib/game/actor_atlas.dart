@@ -52,7 +52,7 @@ class ActorAtlas {
   /// region 이름(예 `walk_E`) → index 정렬된 프레임 리스트.
   final Map<String, List<AtlasFrame>> frames;
 
-  /// [atlasAsset](예 `assets/pc/g/g.atlas`) + [imageAsset](`assets/pc/g/g.png`)
+  /// [atlasAsset](예 `assets/pc/girl/girl.atlas`) + [imageAsset](`assets/pc/girl/girl.png`)
   /// 로드·파싱. 실패하면 null.
   static Future<ActorAtlas?> load(String atlasAsset, String imageAsset) async {
     try {

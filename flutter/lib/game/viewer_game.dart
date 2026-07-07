@@ -1,8 +1,10 @@
 import 'dart:math' as math;
 
+import 'package:flame/cache.dart';
 import 'package:flame/components.dart';
 import 'package:flame/game.dart';
 import 'package:flame/input.dart';
+import 'package:flame_tiled/flame_tiled.dart';
 import 'package:flutter/material.dart';
 
 import 'actor_animation_set.dart';
@@ -11,7 +13,7 @@ import 'actor_contract.dart';
 import 'monster_component.dart';
 import 'world_map.dart';
 
-/// g.blend 캐릭터 뷰어 + 배틀 시뮬레이션. WASD/클릭 이동, 16방향 facing,
+/// girl.blend 캐릭터 뷰어 + 배틀 시뮬레이션. WASD/클릭 이동, 16방향 facing,
 /// 텍스처 팩 자동 로드, 몬스터 추격·전투. 잔디·도로·건물·나무 맵 + 하늘/태양/구름.
 class ViewerGame extends FlameGame with HasKeyboardHandlerComponents {
   ViewerGame({this.autoBattle = false, this.debugSoloPc = false});
@@ -69,8 +71,20 @@ class ViewerGame extends FlameGame with HasKeyboardHandlerComponents {
       ..position = Vector2.zero();
     _actor = actor;
 
+    // assets/map/main_map.tmx (isometric 100x100, tile 64x32) 를 로드해 배경으로 깐다.
+    // tileset 이미지(tileset.png·town.png·nature/tree.png)는 prefix 기준 상대경로로 로드된다.
+    // 맵 중앙이 원점(캐릭터 시작점) 근처에 오도록 절반 크기만큼 왼쪽 위로 이동.
+    final tiledMap = await TiledComponent.load(
+      'main_map.tmx',
+      Vector2(64, 32),
+      prefix: 'assets/map/',
+      images: Images(prefix: 'assets/map/'),
+    );
+    tiledMap.priority = -1000;
+    tiledMap.position = Vector2(-tiledMap.size.x / 2, -tiledMap.size.y / 2);
+
     world
-      ..add(WorldMap())
+      ..add(tiledMap)
       ..add(_marker)
       ..add(actor);
 
@@ -280,7 +294,7 @@ class ViewerGame extends FlameGame with HasKeyboardHandlerComponents {
     final control = !autoBattle
         ? '수동 조작'
         : (_manualTimer > 0 ? '수동 조작 (클릭/WASD)' : '자동 배틀 (AI)');
-    _hud.text = 'g.blend Actor Viewer — 배틀 시뮬레이션\n'
+    _hud.text = 'girl.blend Actor Viewer — 배틀 시뮬레이션\n'
         '${pc.modeLabel}   [$control]\n'
         'HP ${pc.hp.toInt()}/${pc.maxHp.toInt()}   '
         '${pc.statusLine.replaceFirst('state: ', '')}\n'
