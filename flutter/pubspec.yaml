@@ -67,6 +67,7 @@ flutter:
   assets:
     - assets/pc/g/
     - assets/mob/hellion/
+    - assets/mob/dreyer/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

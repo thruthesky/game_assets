@@ -1,0 +1,8 @@
+{
+  "_comment": "axe_rustic.fbx 무기를 mixamo 캐릭터 RightHand 본에 부착하는 프로파일. ref_height=1.65 기준(이 키에서 scale 1.0 → 도끼가 키의 약 60%). 캐릭터마다 키가 달라도 auto_scale(char_h/ref_height)로 비례 보정된다. loc/rot 은 draft 렌더로 grip 확인 후 미세조정.",
+  "bone": "mixamorig:RightHand",
+  "loc": [0.0, 0.0, 0.0],
+  "rot": [0.0, 0.0, 0.0],
+  "scale": 1.0,
+  "ref_height": 1.65
+}

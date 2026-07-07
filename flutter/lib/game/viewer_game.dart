@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flame/components.dart';
 import 'package:flame/game.dart';
 import 'package:flame/input.dart';
@@ -22,7 +24,8 @@ class ViewerGame extends FlameGame with HasKeyboardHandlerComponents {
 
   ActorComponent? _actor;
   ActorAnimationSet? _animSet; // PC(g)
-  ActorAnimationSet? _monsterAnimSet; // 몬스터(hellion)
+  ActorAnimationSet? _hellionAnimSet; // 몬스터 kind: hellion
+  ActorAnimationSet? _dreyerAnimSet; // 몬스터 kind: dreyer
   late final TextComponent _hud;
   final _TargetMarker _marker = _TargetMarker();
   final List<MonsterComponent> _monsters = [];
@@ -44,11 +47,6 @@ class ViewerGame extends FlameGame with HasKeyboardHandlerComponents {
   /// 몬스터가 전멸하면 이 시간 뒤 다음 웨이브를 스폰.
   double _respawnTimer = 0;
 
-  /// PC(0,0) 기준 몬스터 스폰 오프셋(고정 배치). 3마리 — 배틀이 잘 보이게.
-  static const List<(double, double)> _spawnOffsets = [
-    (480, -220), (-460, 180), (240, 500),
-  ];
-
   @override
   Color backgroundColor() => const Color(0xFF2E4020); // 맵 경계 밖 중립 지면색
 
@@ -56,10 +54,15 @@ class ViewerGame extends FlameGame with HasKeyboardHandlerComponents {
   Future<void> onLoad() async {
     // 텍스처 팩이 번들돼 있으면 스프라이트, 없으면 null → placeholder.
     _animSet = await ActorAnimationSet.tryLoad();
-    // 몬스터 hellion atlas(idle/walk/attack). 실패하면 몬스터는 placeholder.
-    _monsterAnimSet = await ActorAnimationSet.loadFrom(
+    // kind 별 몬스터 atlas 를 각각 로드(idle/walk/attack/hit/death). 실패하면 null
+    // → 그 kind 몬스터는 붉은 placeholder. 둘 다 sheet.py --kind mob 산출물.
+    _hellionAnimSet = await ActorAnimationSet.loadFrom(
       'assets/mob/hellion/hellion.atlas',
       'assets/mob/hellion/hellion.png',
+    );
+    _dreyerAnimSet = await ActorAnimationSet.loadFrom(
+      'assets/mob/dreyer/dreyer.atlas',
+      'assets/mob/dreyer/dreyer.png',
     );
 
     final actor = ActorComponent(animSet: _animSet, maxHp: 200)
@@ -123,21 +126,75 @@ class ViewerGame extends FlameGame with HasKeyboardHandlerComponents {
     return best;
   }
 
-  /// PC 주변에 몬스터 한 웨이브를 스폰.
+  /// PC 주변에 kind 별 몬스터를 1마리씩 스폰 — hellion 1(왼쪽) + dreyer 1(오른쪽).
   void _spawnWave() {
     final pc = _actor;
     if (pc == null) return;
-    for (final off in _spawnOffsets) {
+    // (해당 kind 애님셋, PC 기준 오프셋 dx, dy). kind 당 정확히 1마리.
+    final specs = <(ActorAnimationSet?, double, double)>[
+      (_hellionAnimSet, -240, 40), // hellion — PC 왼쪽
+      (_dreyerAnimSet, 240, 40), // dreyer — PC 오른쪽
+    ];
+    for (final (animSet, dx, dy) in specs) {
       final m = MonsterComponent(
         prey: pc,
-        animSet: _monsterAnimSet, // hellion 스프라이트(있으면), 없으면 placeholder
-        // hellion 원색 표시 — atlas 있으면 tint 없이, 없으면(placeholder) 붉은 tint.
-        tint: _monsterAnimSet == null ? const Color(0xFFE05A5A) : null,
-      )..position = pc.position + Vector2(off.$1, off.$2);
+        animSet: animSet, // 해당 kind 스프라이트(있으면), 없으면 placeholder
+        // atlas 있으면 원색, 없으면(placeholder) 붉은 tint.
+        tint: animSet == null ? const Color(0xFFE05A5A) : null,
+      )..position = pc.position + Vector2(dx, dy);
       _monsters.add(m);
       world.add(m);
     }
   }
+
+  /// 몬스터들이 같은 지점(PC)으로 몰려들어 한 몸처럼 겹쳐 보이는 것을 막는다.
+  /// 추격·이동 로직과 독립적으로, 매 프레임 서로 [_monsterSep] 보다 가까운 쌍을
+  /// 반대 방향으로 부드럽게(glide) 밀어내 나란히 서게 한다. 위치는 발 기준.
+  void _separateMonsters(double dt) {
+    final live = _monsters
+        .where((m) => m.isMounted && !m.isDead)
+        .toList(growable: false);
+    if (live.length < 2) return;
+
+    // 각 몬스터가 이번 프레임에 물러날 누적 벡터(먼저 전부 계산 후 한꺼번에 적용).
+    final push = List.generate(live.length, (_) => Vector2.zero());
+    for (var i = 0; i < live.length; i++) {
+      for (var j = i + 1; j < live.length; j++) {
+        final away = live[i].position - live[j].position;
+        var d = away.length;
+        Vector2 dir;
+        if (d < 0.01) {
+          // 거의 완전히 겹침 — 인덱스로 결정적 분리 방향을 준다(황금각).
+          final ang = i * 2.39996;
+          dir = Vector2(math.cos(ang), math.sin(ang));
+          d = 0;
+        } else {
+          dir = away / d;
+        }
+        if (d < _monsterSep) {
+          // 겹친 만큼의 절반씩 서로 반대로 물러난다.
+          final force = dir * ((_monsterSep - d) * 0.5);
+          push[i] += force;
+          push[j] -= force;
+        }
+      }
+    }
+
+    // 한 프레임 이동량을 제한해 순간이동이 아니라 부드럽게 미끄러지게 한다.
+    final maxStep = _monsterGlideSpeed * dt;
+    for (var i = 0; i < live.length; i++) {
+      var p = push[i];
+      if (p.length2 == 0) continue;
+      if (p.length > maxStep) p = p.normalized() * maxStep;
+      live[i].position += p;
+    }
+  }
+
+  /// 몬스터끼리 유지할 최소 간격(px). 이보다 가까우면 밀어낸다.
+  static const double _monsterSep = 104;
+
+  /// 겹침 해소 시 한 몬스터가 초당 미끄러질 수 있는 최대 거리(px/s).
+  static const double _monsterGlideSpeed = 170;
 
   @override
   void update(double dt) {
@@ -203,6 +260,9 @@ class ViewerGame extends FlameGame with HasKeyboardHandlerComponents {
       }
     }
     _pcWasAttacking = attacking;
+
+    // 겹쳐 쌓인 몬스터를 서로 밀어내 나란히 세운다.
+    _separateMonsters(dt);
 
     // 제거된 몬스터 정리 + 전멸 시 리스폰.
     _monsters.removeWhere((m) => !m.isMounted);

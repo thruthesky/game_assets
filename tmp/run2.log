@@ -1,0 +1,27 @@
+Resolving dependencies...
+Downloading packages...
+  matcher 0.12.19 (0.12.20 available)
+  meta 1.18.0 (1.18.3 available)
+  test_api 0.7.11 (0.7.13 available)
+  vector_math 2.2.0 (2.4.0 available)
+Got dependencies!
+4 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+Launching lib/main.dart on macOS in debug mode...
+Building macOS application...                                   
+✓ Built build/macos/Build/Products/Debug/laryen_actor_viewer.app
+2026-07-07 12:57:41.166 laryen_actor_viewer[15726:13270855] Running with merged UI and platform thread. Experimental.
+Failed to foreground app; open returned 1
+Syncing files to device macOS...                                    58ms
+
+Flutter run key commands.
+r Hot reload. 🔥🔥🔥
+R Hot restart.
+h List all available interactive commands.
+d Detach (terminate "flutter run" but leave application running).
+c Clear the screen
+q Quit (terminate the application on the device).
+
+A Dart VM Service on macOS is available at: http://127.0.0.1:57594/7SA1ooRGMlw=/
+The Flutter DevTools debugger and profiler on macOS is available at: http://127.0.0.1:57594/7SA1ooRGMlw=/devtools/?uri=ws://127.0.0.1:57594/7SA1ooRGMlw=/ws
+Lost connection to device.
